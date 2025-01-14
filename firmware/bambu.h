@@ -125,14 +125,21 @@ namespace bambulabs
             return {};
         }
 
+        int min_temp = doc_in["min_temp"].as<int>();
+        int max_temp = doc_in["max_temp"].as<int>();
+        if (min_temp < 0 || min_temp > 300 || max_temp < 0 || max_temp > 300) {
+            ESP_LOGE("bambu", "Temperature values out of valid range");
+            return {};
+        }
+
         JsonObject print = doc_out.createNestedObject("print");
         print["sequence_id"] = "0";
         print["command"] = "ams_filament_setting";
         print["ams_id"] = ams_id;
         print["tray_id"] = ams_tray;
         print["tray_color"] = doc_in["color_hex"].as<std::string>() + "FF";
-        print["nozzle_temp_min"] = uint16_t(doc_in["min_temp"]); // if not string or int, will fall back to 0
-        print["nozzle_temp_max"] = uint16_t(doc_in["max_temp"]); // if not string or int, will fall back to 0
+        print["nozzle_temp_min"] = static_cast<uint16_t>(min_temp);
+        print["nozzle_temp_max"] = static_cast<uint16_t>(max_temp);
         print["tray_type"] = doc_in["type"];
         print["setting_id"] = "";
         print["tray_info_idx"] = get_bambu_code(doc_in["type"], doc_in["brand"]);
