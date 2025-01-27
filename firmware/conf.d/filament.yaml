@@ -183,6 +183,30 @@ select:
             return "";
           }
     - script.execute: preview_rfid_data
+switch:
+  - platform: template
+    name: "Include alpha value in filament color"
+    id: filament_include_alpha
+    state_topic:
+    icon: "mdi:palette-outline"
+    optimistic: true
+    web_server:
+      sorting_group_id: sorting_group_filament_settings
+      sorting_weight: 70
+    turn_on_action:
+      then:
+      - lambda: |-
+          id(filament_include_alpha).publish_state(true);
+          char hexStr[3];
+          sprintf(hexStr, "%02X", (int)id(filament_alpha_int).state);     
+          id(filament_alpha).publish_state(hexStr);
+      - script.execute: preview_rfid_data
+    turn_off_action:
+      then:
+      - lambda: |-
+          id(filament_include_alpha).publish_state(false);
+          id(filament_alpha).publish_state("");
+      - script.execute: preview_rfid_data  
 number:
 - platform: template
   name: "Filament Min Temp"
@@ -231,6 +255,29 @@ number:
   on_value:
     then:
     - script.execute: preview_rfid_data
+- platform: template
+  name: "Filament alpha value"
+  id: filament_alpha_int
+  state_topic:
+  min_value: 0
+  max_value: 255
+  initial_value: 255
+  step: 5
+  icon: mdi:palette-outline
+  optimistic: true
+  web_server:
+    sorting_group_id: sorting_group_filament_settings
+    sorting_weight: 90
+  set_action:
+    then:
+    - lambda: |-
+        id(filament_alpha_int).publish_state(int(round(x)));
+        char hexStr[3];
+        sprintf(hexStr, "%02X", (int)id(filament_alpha_int).state);     
+        id(filament_alpha).publish_state(hexStr);
+  on_value:
+    then:
+    - script.execute: preview_rfid_data
 text_sensor:
 - platform: template
   name: "Filament Brand Code"
@@ -240,20 +287,32 @@ text_sensor:
   web_server:
     sorting_group_id: sorting_group_filament_settings
     sorting_weight: 110
-  on_value:
-    then:
-    - script.execute: preview_rfid_data
+  # on_value: #not needed?
+  #   then:
+  #   - script.execute: preview_rfid_data
 - platform: template
   name: "Filament Color Hex"
   id: filament_color_hex
   state_topic:
   icon: mdi:hexagon-outline
+  internal: true
   web_server:
     sorting_group_id: sorting_group_filament_settings
     sorting_weight: 100
-  on_value:
-    then:
-    - script.execute: preview_rfid_data
+  # on_value: #not needed?
+  #   then:
+  #   - script.execute: preview_rfid_data
+- platform: template
+  name: "Filament Color Hex"
+  id: filament_color_hexaa
+  state_topic:
+  icon: mdi:hexagon-outline
+  web_server:
+    sorting_group_id: sorting_group_filament_settings
+    sorting_weight: 105
+  # on_value: #not needed?
+  #   then:
+  #   - script.execute: preview_rfid_data
 - platform: template
   name: Filament Sub Brand
   id: filament_sub_brand
@@ -262,9 +321,15 @@ text_sensor:
   web_server:
     sorting_group_id: sorting_group_filament_settings
     sorting_weight: 120
-  on_value:
-    then:
-    - script.execute: preview_rfid_data
+  # on_value: #not needed?
+  #   then:
+  #   - script.execute: preview_rfid_data
+- platform: template
+  name: Filament alpha
+  id: filament_alpha
+  state_topic:
+  icon: mdi:label
+  internal: true
 button:
 - platform: template
   name: Upload Settings

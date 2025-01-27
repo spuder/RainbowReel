@@ -5,6 +5,7 @@ script:
   - text_sensor.template.publish:
       id: nfc_preview
       state: !lambda |-
+        id(filament_color_hexaa).publish_state(id(filament_color_hex).state + id(filament_alpha).state);
         auto pretty_json = [=]() -> std::string {
           StaticJsonDocument<256> doc;
           JsonObject root = doc.to<JsonObject>();
@@ -12,7 +13,12 @@ script:
           root["protocol"] = "openspool";
           root["version"] = "1.0";
           root["brand"] = id(filament_brand).state.c_str();
-          root["color_hex"] = id(filament_color_hex).state.c_str();
+          if (id(filament_include_alpha).state == true){
+            root["color_hex"] = id(filament_color_hexaa).state.c_str();   
+          }
+          else{
+            root["color_hex"] = id(filament_color_hex).state.c_str();
+          } 
           root["min_temp"] = id(filament_min_temp).state;
           root["max_temp"] = id(filament_max_temp).state;
           root["type"] = id(filament_type).state.c_str();
@@ -95,8 +101,13 @@ script:
               print["command"] = "ams_filament_setting";
               print["ams_id"] = 255; //TODO: support multiple AMS
               print["tray_id"] = 254; //TODO: support multiple trays
-              std::string color = id(filament_color_hex).state + "FF";
-              print["tray_color"] = color;
+              if (id(filament_include_alpha).state == true){
+                print["tray_color"] = id(filament_color_hexaa).state;
+              }
+              else{
+                std::string color = id(filament_color_hex).state + "FF";
+                print["tray_color"] = color;
+              } 
               print["nozzle_temp_min"] = int8_t(id(filament_min_temp).state);
               print["nozzle_temp_max"] = int8_t(id(filament_max_temp).state);
               print["tray_type"] = id(filament_type).state.c_str();

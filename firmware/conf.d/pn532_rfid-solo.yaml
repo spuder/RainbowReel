@@ -268,7 +268,12 @@ button:
             JsonObject root = doc.to<JsonObject>();
             root["version"] = "1.0";
             root["protocol"] = "openspool";
-            root["color_hex"] = id(filament_color_hex).state;
+            if (id(filament_include_alpha).state == true){
+              root["color_hex"] = id(filament_color_hexaa).state;
+            }
+            else{
+              root["color_hex"] = id(filament_color_hex).state;
+            } 
             root["type"] = id(filament_type).state;
             root["min_temp"] = id(filament_min_temp).state;
             root["max_temp"] = id(filament_max_temp).state;
